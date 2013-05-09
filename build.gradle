@@ -1,0 +1,63 @@
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'checkstyle'
+    apply plugin: 'findbugs'
+    apply plugin: 'jacoco'
+    
+    repositories {
+        mavenCentral()
+    }
+    
+    group = 'org.waterprinciple.magrood'
+    version = '0.1.0-SNAPSHOT'
+    
+    dependencies {
+        compile (
+            ['javax.inject:javax.inject:1'],
+            ['com.google.code.findbugs:jsr305:2.0.1'],
+            ['com.google.code.findbugs:annotations:2.0.1'],
+            ['org.slf4j:slf4j-api:1.7.5'],
+            ['com.google.guava:guava:14.0.1'],
+        )
+        
+        testCompile (
+            ['junit:junit:4.11'],
+            ['org.mockito:mockito-all:1.9.5'],
+            ['org.slf4j:slf4j-jdk14:1.7.5'],
+        )
+        
+        checkstyle 'com.puppycrawl.tools:checkstyle:5.6'
+        findbugs 'com.google.code.findbugs:findbugs:2.0.1'
+    }
+    
+    checkstyle {
+        toolVersion = '5.6'
+        showViolations = true
+        sourceSets = [sourceSets.main]
+        configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
+    }
+        
+    findbugs {
+        toolVersion = '2.0.1'
+        ignoreFailures = true
+    }
+    
+    jacocoTestReport {
+        reports {
+            html.enabled = true
+            csv.enabled = true
+            xml.enabled = true
+        } 
+    }
+    
+    
+    jacocoTestReport.dependsOn(test)
+    build.dependsOn javadoc
+    build.dependsOn jacocoTestReport
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '1.6'
+}
+
+
