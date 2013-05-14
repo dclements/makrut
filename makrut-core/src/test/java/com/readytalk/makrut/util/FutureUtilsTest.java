@@ -18,7 +18,6 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -27,9 +26,7 @@ import com.readytalk.makrut.strategy.PushbackStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -178,7 +175,7 @@ public class FutureUtilsTest {
 
 	@Test
 	public void withFallbackCache_OnFailureWhenPresent_ReplacesValue() throws Exception {
-		when(cache.getIfPresent(callable)).thenReturn(Optional.of(obj));
+		when(cache.getOptional(callable)).thenReturn(Optional.of(obj));
 
 		SettableFuture<Object> settable = SettableFuture.create();
 
@@ -191,7 +188,7 @@ public class FutureUtilsTest {
 
 	@Test
 	public void withFallbackCache_OnFailureWhenAbsent_ReturnsFailedFuture() throws Exception {
-		when(cache.getIfPresent(callable)).thenReturn(Optional.absent());
+		when(cache.getOptional(callable)).thenReturn(Optional.absent());
 
 		final Exception ex = new Exception();
 
@@ -212,7 +209,7 @@ public class FutureUtilsTest {
 
 	@Test
 	public void withFallbackCache_OnSuccess_DoesNotRun() throws Exception {
-		when(cache.getIfPresent(callable)).thenReturn(Optional.of(obj));
+		when(cache.getOptional(callable)).thenReturn(Optional.of(obj));
 
 		SettableFuture<Object> settable = SettableFuture.create();
 
@@ -222,12 +219,12 @@ public class FutureUtilsTest {
 
 		assertEquals(obj, future.get());
 
-		verify(cache, never()).getIfPresent(eq(callable));
+		verify(cache, never()).getOptional(eq(callable));
 	}
 
 	@Test
 	public void withFallbackCache_IfCancelled_RemainsCancelled() throws Exception {
-		when(cache.getIfPresent(callable)).thenReturn(Optional.of(obj));
+		when(cache.getOptional(callable)).thenReturn(Optional.of(obj));
 
 		SettableFuture<Object> settable = SettableFuture.create();
 

@@ -41,7 +41,7 @@ import com.readytalk.makrut.util.MakrutCommandWrapper;
 public class MakrutExecutorBuilder {
 
 	private final CallableUtils callUtils;
-	private final Optional<FutureUtils> retryUtils;
+	private final FutureUtils retryUtils;
 
 	private ListeningExecutorService primaryPool = null;
 
@@ -57,9 +57,9 @@ public class MakrutExecutorBuilder {
 	private Optional<CacheWrapper> fallbackCache = Optional.absent();
 
 	@Inject
-	public MakrutExecutorBuilder(final CallableUtils callUtils, @Nullable final FutureUtils futureUtils) {
+	public MakrutExecutorBuilder(final CallableUtils callUtils, final FutureUtils futureUtils) {
 		this.callUtils = checkNotNull(callUtils);
-		this.retryUtils = Optional.fromNullable(futureUtils);
+		this.retryUtils = futureUtils;
 	}
 
 	public MakrutExecutor build() {
@@ -102,20 +102,19 @@ public class MakrutExecutorBuilder {
 		return new MakrutCommandWrapper<T>(command, callTicker);
 	}
 
-	private <T> ListenableFuture<T> buildFuture(final Callable<T> input, final MakrutCommandWrapper<T> command,
+	private <T> ListenableFuture<T> buildFuture(final Callable<T> input,
+			final MakrutCommandWrapper<T> command,
 			final ListenableFuture<T> future) {
 		ListenableFuture<T> retval = future;
 
 		if (retry.isPresent()) {
 			checkState(retryPool.isPresent(), "Retry executor service must also be provided.");
-			checkState(retryUtils.isPresent(), "Future utilities were not provided.");
 
-			retval = retryUtils.get().addRetry(retryPool.get(), retry.get(), pushback, future, command);
+			retval = retryUtils.addRetry(retryPool.get(), retry.get(), pushback, future, command);
 		}
 
 		if (fallbackCache.isPresent()) {
-			checkState(retryUtils.isPresent(), "Future utilities were not provided.");
-			retval = retryUtils.get().withFallbackCache(input, retval, fallbackCache.get());
+			retval = retryUtils.withFallbackCache(input, retval, fallbackCache.get());
 		}
 
 		return retval;

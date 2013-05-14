@@ -100,7 +100,7 @@ public class FutureUtils {
 		return Futures.withFallback(future, new FutureFallback<T>() {
 			@Override
 			public ListenableFuture<T> create(final Throwable th) throws Exception {
-				Optional<T> value = cache.getIfPresent(key);
+				Optional<T> value = cache.getOptional(key);
 
 				if (future.isCancelled()) {
 					return Futures.immediateCancelledFuture();

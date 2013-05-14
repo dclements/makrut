@@ -53,13 +53,13 @@ public class CacheWrapperTest {
 	public void getIfPresent_IfPresent_ReturnsValue() throws Exception {
 		when(cache.getIfPresent(eq(key))).thenReturn(obj);
 
-		assertEquals(obj, wrapper.getIfPresent(key).get());
+		assertEquals(obj, wrapper.getOptional(key).get());
 	}
 
 	@Test
 	public void getIfPresent_IfAbsent_ReturnsAbsent() throws Exception {
 
-		assertFalse(wrapper.getIfPresent(key).isPresent());
+		assertFalse(wrapper.getOptional(key).isPresent());
 	}
 
 	@Test

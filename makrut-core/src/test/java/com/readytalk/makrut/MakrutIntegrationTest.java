@@ -28,10 +28,12 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provider;
+import com.readytalk.makrut.inject.MakrutCoreModule;
 import com.readytalk.makrut.strategy.PushbackStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
-import com.readytalk.makrut.util.CallableUtils;
-import com.readytalk.makrut.util.FutureUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,14 +50,16 @@ public class MakrutIntegrationTest {
 	@Rule
 	public final Timeout timeout = new Timeout(10000);
 
+	private final Injector injector = Guice.createInjector(new MakrutCoreModule());
+
+	private final Provider<MakrutExecutorBuilder> executorBuilderProvider = injector.getProvider(
+			MakrutExecutorBuilder.class);
+
 	private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(
 			MoreExecutors.getExitingScheduledExecutorService(new ScheduledThreadPoolExecutor(2)));
 
 	private final ListeningScheduledExecutorService retryExecutor = spy(MoreExecutors.listeningDecorator(
 			MoreExecutors.getExitingScheduledExecutorService(new ScheduledThreadPoolExecutor(2))));
-
-	private final CallableUtils callableUtils = new CallableUtils();
-	private final FutureUtils futureUtils = new FutureUtils();
 
 	private final Cache<Callable<?>, Object> cache = CacheBuilder.newBuilder().concurrencyLevel(2).build();
 
@@ -82,14 +86,14 @@ public class MakrutIntegrationTest {
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
-		builder = new MakrutExecutorBuilder(callableUtils, futureUtils).withExecutorService(executor);
+		builder = executorBuilderProvider.get().withExecutorService(executor);
 	}
 
 	@Test
 	public void build_WithoutExecutor_ThrowsNPException() {
 		thrown.expect(NullPointerException.class);
 
-		new MakrutExecutorBuilder(callableUtils, futureUtils).build();
+		executorBuilderProvider.get().build();
 	}
 
 	@Test
