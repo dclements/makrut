@@ -1,29 +1,37 @@
 package com.readytalk.makrut.util;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static com.google.inject.internal.util.$Preconditions.checkArgument;
 import static com.google.inject.internal.util.$Preconditions.checkNotNull;
 
 import javax.annotation.Nonnegative;
 import javax.annotation.concurrent.Immutable;
-import javax.inject.Inject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
+import com.google.common.util.concurrent.UncheckedTimeoutException;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 /**
  * Utilities for constructing robust Callable objects.
  */
 @Immutable
 public class CallableUtils {
+	private final MetricRegistry metrics;
+	private final Callable<?> input;
 	private final TimeLimiter limiter = new SimpleTimeLimiter();
 
-	@Inject
-	public CallableUtils() {
-
+	@AssistedInject
+	public CallableUtils(final MetricRegistry metrics, @Assisted final Callable<?> input) {
+		this.metrics = metrics;
+		this.input = input;
 	}
 
 	/**
@@ -44,26 +52,54 @@ public class CallableUtils {
 		checkNotNull(callable);
 		checkNotNull(unit);
 
-		return limiter.newProxy(callable, Callable.class, timeLimit, unit);
+		final Meter durationExceeded = metrics.meter(name(input.getClass(), "call", "timeout-exceeded"));
+
+		final Callable<T> retval = limiter.newProxy(callable, Callable.class, timeLimit, unit);
+
+		return new Callable<T>() {
+			@Override
+			public T call() throws Exception {
+				try {
+					return retval.call();
+				} catch (UncheckedTimeoutException ex) {
+					durationExceeded.mark();
+					throw ex;
+				}
+			}
+		};
 	}
 
 	/**
 	 * Reports the amount of time that it takes to execute a Callable to a Timer object.
 	 *
 	 * @param callable The Callable to report on.
-	 * @param timer The Timer object which will create the report.
 	 *
 	 * @return A Callable that will report the duration of every call to call().
 	 */
-	public <T> Callable<T> timeExecution(final Callable<T> callable, final Timer timer) {
+	public <T> Callable<T> timeExecution(final Callable<T> callable) {
 		checkNotNull(callable);
-		checkNotNull(timer);
+
+		final Timer timer = metrics.timer(name(input.getClass(), "call", "duration"));
 
 		return new Callable<T>() {
 
 			@Override
 			public T call() throws Exception {
 				return timer.time(callable);
+			}
+		};
+	}
+
+	public <T> Callable<T> meterExecution(final Callable<T> callable) {
+		checkNotNull(callable);
+
+		final Meter count = metrics.meter(name(input.getClass(), "call", "count"));
+		return new Callable<T>() {
+			@Override
+			public T call() throws Exception {
+				count.mark();
+
+				return callable.call();
 			}
 		};
 	}

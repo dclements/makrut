@@ -12,7 +12,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import com.codahale.metrics.Timer;
 import com.google.common.base.Optional;
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
@@ -23,6 +22,7 @@ import com.readytalk.makrut.strategy.PushbackStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import com.readytalk.makrut.util.CacheWrapper;
 import com.readytalk.makrut.util.CallableUtils;
+import com.readytalk.makrut.util.CallableUtilsFactory;
 import com.readytalk.makrut.util.FutureUtils;
 import com.readytalk.makrut.util.MakrutCommandWrapper;
 
@@ -40,7 +40,7 @@ import com.readytalk.makrut.util.MakrutCommandWrapper;
 @NotThreadSafe
 public class MakrutExecutorBuilder {
 
-	private final CallableUtils callUtils;
+	private final CallableUtilsFactory callUtils;
 	private final FutureUtils retryUtils;
 
 	private ListeningExecutorService primaryPool = null;
@@ -49,15 +49,17 @@ public class MakrutExecutorBuilder {
 
 	private Optional<Semaphore> callSemaphore = Optional.absent();
 	private Optional<CacheWrapper> blockingCache = Optional.absent();
-	private Optional<Timer> callTimer = Optional.absent();
 	private Optional<Long> individualTimeLimitMillis = Optional.absent();
 	private Optional<ListeningScheduledExecutorService> retryPool = Optional.absent();
 	private Optional<RetryStrategy> retry = Optional.absent();
 	private Optional<PushbackStrategy> pushback = Optional.absent();
 	private Optional<CacheWrapper> fallbackCache = Optional.absent();
 
+	private boolean callTimer = false;
+	private boolean callMeter = false;
+
 	@Inject
-	public MakrutExecutorBuilder(final CallableUtils callUtils, final FutureUtils futureUtils) {
+	public MakrutExecutorBuilder(final CallableUtilsFactory callUtils, final FutureUtils futureUtils) {
 		this.callUtils = checkNotNull(callUtils);
 		this.retryUtils = futureUtils;
 	}
@@ -79,24 +81,30 @@ public class MakrutExecutorBuilder {
 	private <T, V extends Callable<T>> MakrutCommandWrapper<T> buildCommand(final V input) {
 		Callable<T> command = input;
 
+		CallableUtils utils = callUtils.create(input);
+
 		if (callSemaphore.isPresent()) {
-			command = callUtils.withSemaphore(command, callSemaphore.get());
+			command = utils.withSemaphore(command, callSemaphore.get());
 		}
 
 		if (blockingCache.isPresent()) {
-			command = callUtils.withBlockingCache(input, command, blockingCache.get());
+			command = utils.withBlockingCache(input, command, blockingCache.get());
 		}
 
-		if (callTimer.isPresent()) {
-			command = callUtils.timeExecution(command, callTimer.get());
+		if (callTimer) {
+			command = utils.timeExecution(command);
+		}
+
+		if (callMeter) {
+			command = utils.meterExecution(command);
 		}
 
 		if (individualTimeLimitMillis.isPresent()) {
-			command = callUtils.addTimeLimit(command, individualTimeLimitMillis.get(), TimeUnit.MILLISECONDS);
+			command = utils.addTimeLimit(command, individualTimeLimitMillis.get(), TimeUnit.MILLISECONDS);
 		}
 
 		if (fallbackCache.isPresent()) {
-			command = callUtils.populateCacheWithResult(input, command, fallbackCache.get());
+			command = utils.populateCacheWithResult(input, command, fallbackCache.get());
 		}
 
 		return new MakrutCommandWrapper<T>(command, callTicker);
@@ -150,8 +158,14 @@ public class MakrutExecutorBuilder {
 		return this;
 	}
 
-	public MakrutExecutorBuilder withIndividualCallTimer(final Timer timer) {
-		this.callTimer = Optional.of(timer);
+	public MakrutExecutorBuilder timeIndividualCalls() {
+		this.callTimer = true;
+
+		return this;
+	}
+
+	public MakrutExecutorBuilder meterIndividualCalls() {
+		this.callMeter = true;
 
 		return this;
 	}

@@ -1,5 +1,6 @@
 package com.readytalk.makrut.util;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -10,6 +11,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.cache.Cache;
@@ -45,15 +47,19 @@ public class CallableUtilsTest {
 
 	private final Object obj = new Object();
 	private final MetricRegistry metrics = new MetricRegistry();
-	private final Timer timer = metrics.timer("test");
 
+
+	private Timer timer;
 	private CallableUtils utils;
+
 
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 
-		utils = new CallableUtils();
+		utils = new CallableUtils(metrics, testcallable);
+
+		timer = metrics.timer(name(testcallable.getClass(), "call", "duration"));
 	}
 
 	@After
@@ -121,7 +127,7 @@ public class CallableUtilsTest {
 			}
 		};
 
-		callable = utils.timeExecution(callable, timer);
+		callable = utils.timeExecution(callable);
 
 		callable.call();
 
@@ -133,15 +139,7 @@ public class CallableUtilsTest {
 	public void timeExecution_OnNullCallable_ThrowsException() {
 		thrown.expect(NullPointerException.class);
 
-		utils.timeExecution(null, timer);
-	}
-
-	@Test
-	@SuppressFBWarnings({ "NP_NONNULL_PARAM_VIOLATION" })
-	public void timeExecution_OnNullTimer_ThrowsException() {
-		thrown.expect(NullPointerException.class);
-
-		utils.timeExecution(testcallable, null);
+		utils.timeExecution(null);
 	}
 
 	@Test
@@ -192,6 +190,28 @@ public class CallableUtilsTest {
 		callable.call();
 
 		assertEquals(obj, cache.getIfPresent(key));
+	}
+
+	@Test
+	public void meterExecution_WhenCalledThreeTimes_CountsThreeCalls() throws Exception {
+		Meter count = metrics.meter(name(testcallable.getClass(), "call", "count"));
+
+		Callable<Object> callable = utils.meterExecution(testcallable);
+
+		callable.call();
+		callable.call();
+		callable.call();
+
+		assertEquals(3, count.getCount());
+	}
+
+	@Test
+	public void meterExecution_WhenCalled_ReturnsValue() throws Exception {
+		when(testcallable.call()).thenReturn(obj);
+
+		Callable<Object> callable = utils.meterExecution(testcallable);
+
+		assertEquals(obj, callable.call());
 	}
 
 }

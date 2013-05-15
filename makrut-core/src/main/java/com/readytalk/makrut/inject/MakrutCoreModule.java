@@ -3,8 +3,10 @@ package com.readytalk.makrut.inject;
 import com.codahale.metrics.MetricRegistry;
 import com.google.inject.PrivateModule;
 import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.readytalk.makrut.MakrutExecutorBuilder;
 import com.readytalk.makrut.util.CallableUtils;
+import com.readytalk.makrut.util.CallableUtilsFactory;
 import com.readytalk.makrut.util.FutureUtils;
 
 public class MakrutCoreModule extends PrivateModule {
@@ -20,7 +22,9 @@ public class MakrutCoreModule extends PrivateModule {
 
 	@Override
 	protected void configure() {
-		bind(CallableUtils.class).in(Singleton.class);
+		install(new FactoryModuleBuilder().implement(CallableUtils.class, CallableUtils.class).build(
+				CallableUtilsFactory.class));
+
 		bind(FutureUtils.class).in(Singleton.class);
 		bind(MetricRegistry.class).toInstance(metrics);
 

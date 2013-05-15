@@ -3,6 +3,7 @@ package com.readytalk.makrut;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
@@ -20,6 +21,7 @@ import com.readytalk.makrut.strategy.PushbackStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import com.readytalk.makrut.util.CacheWrapper;
 import com.readytalk.makrut.util.CallableUtils;
+import com.readytalk.makrut.util.CallableUtilsFactory;
 import com.readytalk.makrut.util.FutureUtils;
 import com.readytalk.makrut.util.MakrutCommandWrapper;
 import org.junit.After;
@@ -54,6 +56,9 @@ public class MakrutExecutorBuilderTest {
 	private CallableUtils callUtils;
 
 	@Mock
+	private CallableUtilsFactory callableUtilsFactory;
+
+	@Mock
 	private Ticker ticker;
 
 	@Mock
@@ -76,7 +81,7 @@ public class MakrutExecutorBuilderTest {
 		MockitoAnnotations.initMocks(this);
 
 		when(callUtils.addTimeLimit(any(Callable.class), anyLong(), any(TimeUnit.class))).thenReturn(callable);
-		when(callUtils.timeExecution(any(Callable.class), any(Timer.class))).thenReturn(callable);
+		when(callUtils.timeExecution(any(Callable.class))).thenReturn(callable);
 		when(callUtils.withBlockingCache(any(Callable.class), any(Callable.class),
 				any(CacheWrapper.class))).thenReturn(
 				callable);
@@ -87,7 +92,9 @@ public class MakrutExecutorBuilderTest {
 
 		when(executorService.submit(any(Callable.class))).thenReturn(future);
 
-		builder = new MakrutExecutorBuilder(callUtils, futureUtils);
+		when(callableUtilsFactory.create(any(Callable.class))).thenReturn(callUtils);
+
+		builder = new MakrutExecutorBuilder(callableUtilsFactory, futureUtils);
 	}
 
 	@After
@@ -97,9 +104,9 @@ public class MakrutExecutorBuilderTest {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void build_WhenAllPresent_EnsuresOrdering() {
+	public void build_WhenAllPresent_EnsuresOrderingWhenNeeded() {
 		builder.withExecutorService(executorService);
-		builder.withIndividualCallTimer(timer);
+		builder.timeIndividualCalls();
 		builder.withIndividualTimeLimit(1000L, TimeUnit.MILLISECONDS);
 		builder.withBlockingCache(cache);
 		builder.withRetry(retry, retryService);
@@ -107,6 +114,8 @@ public class MakrutExecutorBuilderTest {
 		builder.withSemaphore(sem);
 		builder.withTicker(ticker);
 		builder.withFallbackCache(cache);
+
+		builder.meterIndividualCalls();
 
 		MakrutExecutor executor = builder.build();
 
@@ -116,7 +125,7 @@ public class MakrutExecutorBuilderTest {
 
 		order.verify(callUtils).withSemaphore(any(Callable.class), eq(sem));
 		order.verify(callUtils).withBlockingCache(any(Callable.class), any(Callable.class), any(CacheWrapper.class));
-		order.verify(callUtils).timeExecution(any(Callable.class), eq(timer));
+		order.verify(callUtils).timeExecution(any(Callable.class));
 		order.verify(callUtils).addTimeLimit(any(Callable.class), anyLong(), any(TimeUnit.class));
 		order.verify(callUtils).populateCacheWithResult(eq(callable), any(Callable.class), any(CacheWrapper.class));
 
@@ -125,5 +134,7 @@ public class MakrutExecutorBuilderTest {
 						any(MakrutCommandWrapper.class));
 
 		order.verify(futureUtils).withFallbackCache(eq(callable), eq(future), any(CacheWrapper.class));
+
+		verify(callUtils).meterExecution(any(Callable.class));
 	}
 }

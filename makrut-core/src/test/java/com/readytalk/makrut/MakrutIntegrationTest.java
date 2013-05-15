@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.SortedMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -20,6 +21,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Ticker;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -50,7 +53,9 @@ public class MakrutIntegrationTest {
 	@Rule
 	public final Timeout timeout = new Timeout(10000);
 
-	private final Injector injector = Guice.createInjector(new MakrutCoreModule());
+	private final MetricRegistry metrics = new MetricRegistry();
+
+	private final Injector injector = Guice.createInjector(new MakrutCoreModule(metrics));
 
 	private final Provider<MakrutExecutorBuilder> executorBuilderProvider = injector.getProvider(
 			MakrutExecutorBuilder.class);
@@ -341,5 +346,36 @@ public class MakrutIntegrationTest {
 
 		verify(retryStrategy).shouldRetry(eq(1), anyLong(), eq(th));
 		verify(callable, times(3)).call();
+	}
+
+	@Test
+	public void meterIndividualCalls_OnSingleExecution_CountsOnce() throws Exception {
+		when(callable.call()).thenReturn(obj);
+
+		MakrutExecutor mexec = builder.meterIndividualCalls().build();
+
+		assertEquals(obj, mexec.submit(callable).get());
+
+		SortedMap<String, Meter> meters = metrics.getMeters();
+
+		assertEquals(1, meters.get(meters.firstKey()).getCount());
+
+	}
+
+	@Test
+	public void meterIndividualCalls_OnRetry_CountsRetries() throws Exception {
+		Exception th = new RuntimeException();
+		when(callable.call()).thenThrow(th).thenReturn(obj);
+
+		when(retryStrategy.shouldRetry(eq(1), anyLong(), any(Exception.class))).thenReturn(true);
+
+		MakrutExecutor mexec = builder.withRetry(retryStrategy, retryExecutor).meterIndividualCalls().build();
+
+		assertEquals(obj, mexec.submit(callable).get());
+
+
+		SortedMap<String, Meter> meters = metrics.getMeters();
+
+		assertEquals(2, meters.get(meters.firstKey()).getCount());
 	}
 }
