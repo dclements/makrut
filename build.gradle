@@ -8,8 +8,8 @@ subprojects {
         mavenCentral()
     }
     
-    group = 'org.waterprinciple.magrood'
-    version = '0.1.0-SNAPSHOT'
+    group = 'com.readytalk.makrut'
+    version = '0.2.0-SNAPSHOT'
     
     dependencies {
         compile (
@@ -49,7 +49,6 @@ subprojects {
             xml.enabled = true
         } 
     }
-    
     
     jacocoTestReport.dependsOn(test)
     build.dependsOn javadoc
