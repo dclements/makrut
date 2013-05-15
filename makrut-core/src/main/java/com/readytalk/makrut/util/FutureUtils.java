@@ -1,18 +1,22 @@
 package com.readytalk.makrut.util;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import javax.annotation.concurrent.Immutable;
-import javax.inject.Inject;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureFallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.readytalk.makrut.strategy.PushbackStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -23,8 +27,13 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @Immutable
 public class FutureUtils {
 
-	@Inject
-	public FutureUtils() {
+	private final MetricRegistry metrics;
+	private final Callable<?> input;
+
+	@AssistedInject
+	public FutureUtils(final MetricRegistry metrics, @Assisted final Callable<?> input) {
+		this.metrics = metrics;
+		this.input = input;
 
 	}
 
@@ -52,6 +61,8 @@ public class FutureUtils {
 		checkNotNull(future);
 		checkNotNull(command);
 
+		final Meter retryRate = metrics.meter(name(input.getClass(), "retry", "rate"));
+
 		return Futures.withFallback(future, new FutureFallback<T>() {
 
 			@Override
@@ -66,6 +77,8 @@ public class FutureUtils {
 				} else {
 					ex = new Exception(t);
 				}
+
+				retryRate.mark();
 
 				if (retryStrategy.shouldRetry(command.callCount(), command.timeElapsed(TimeUnit.MILLISECONDS), ex)) {
 					return addRetry(service, retryStrategy, pushbackStrategy,
@@ -105,8 +118,10 @@ public class FutureUtils {
 				if (future.isCancelled()) {
 					return Futures.immediateCancelledFuture();
 				} else if (value.isPresent()) {
+					metrics.meter(name(input.getClass(), "fallback", "cache", "hit", "rate"));
 					return Futures.immediateFuture(value.get());
 				} else {
+					metrics.meter(name(input.getClass(), "fallback", "cache", "miss", "rate"));
 					return Futures.immediateFailedFuture(th);
 				}
 			}

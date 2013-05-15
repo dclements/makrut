@@ -24,6 +24,7 @@ import com.readytalk.makrut.util.CacheWrapper;
 import com.readytalk.makrut.util.CallableUtils;
 import com.readytalk.makrut.util.CallableUtilsFactory;
 import com.readytalk.makrut.util.FutureUtils;
+import com.readytalk.makrut.util.FutureUtilsFactory;
 import com.readytalk.makrut.util.MakrutCommandWrapper;
 
 /**
@@ -40,8 +41,8 @@ import com.readytalk.makrut.util.MakrutCommandWrapper;
 @NotThreadSafe
 public class MakrutExecutorBuilder {
 
-	private final CallableUtilsFactory callUtils;
-	private final FutureUtils retryUtils;
+	private final CallableUtilsFactory callUtilsFactory;
+	private final FutureUtilsFactory retryUtilsFactory;
 
 	private ListeningExecutorService primaryPool = null;
 
@@ -59,9 +60,9 @@ public class MakrutExecutorBuilder {
 	private boolean callMeter = false;
 
 	@Inject
-	public MakrutExecutorBuilder(final CallableUtilsFactory callUtils, final FutureUtils futureUtils) {
-		this.callUtils = checkNotNull(callUtils);
-		this.retryUtils = futureUtils;
+	public MakrutExecutorBuilder(final CallableUtilsFactory callUtilsFactory, final FutureUtilsFactory futureUtils) {
+		this.callUtilsFactory = checkNotNull(callUtilsFactory);
+		this.retryUtilsFactory = futureUtils;
 	}
 
 	public MakrutExecutor build() {
@@ -81,7 +82,7 @@ public class MakrutExecutorBuilder {
 	private <T, V extends Callable<T>> MakrutCommandWrapper<T> buildCommand(final V input) {
 		Callable<T> command = input;
 
-		CallableUtils utils = callUtils.create(input);
+		CallableUtils utils = callUtilsFactory.create(input);
 
 		if (callSemaphore.isPresent()) {
 			command = utils.withSemaphore(command, callSemaphore.get());
@@ -115,14 +116,16 @@ public class MakrutExecutorBuilder {
 			final ListenableFuture<T> future) {
 		ListenableFuture<T> retval = future;
 
+		FutureUtils utils = retryUtilsFactory.create(input);
+
 		if (retry.isPresent()) {
 			checkState(retryPool.isPresent(), "Retry executor service must also be provided.");
 
-			retval = retryUtils.addRetry(retryPool.get(), retry.get(), pushback, future, command);
+			retval = utils.addRetry(retryPool.get(), retry.get(), pushback, future, command);
 		}
 
 		if (fallbackCache.isPresent()) {
-			retval = retryUtils.withFallbackCache(input, retval, fallbackCache.get());
+			retval = utils.withFallbackCache(input, retval, fallbackCache.get());
 		}
 
 		return retval;

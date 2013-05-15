@@ -16,6 +16,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -59,7 +60,7 @@ public class FutureUtilsTest {
 
 		executorService = MoreExecutors.listeningDecorator(new ScheduledThreadPoolExecutor(1));
 
-		utils = new FutureUtils();
+		utils = new FutureUtils(new MetricRegistry(), callable);
 	}
 
 	@After

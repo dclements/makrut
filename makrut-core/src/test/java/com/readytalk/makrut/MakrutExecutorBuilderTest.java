@@ -23,6 +23,7 @@ import com.readytalk.makrut.util.CacheWrapper;
 import com.readytalk.makrut.util.CallableUtils;
 import com.readytalk.makrut.util.CallableUtilsFactory;
 import com.readytalk.makrut.util.FutureUtils;
+import com.readytalk.makrut.util.FutureUtilsFactory;
 import com.readytalk.makrut.util.MakrutCommandWrapper;
 import org.junit.After;
 import org.junit.Before;
@@ -59,6 +60,9 @@ public class MakrutExecutorBuilderTest {
 	private CallableUtilsFactory callableUtilsFactory;
 
 	@Mock
+	private FutureUtilsFactory futureUtilsFactory;
+
+	@Mock
 	private Ticker ticker;
 
 	@Mock
@@ -93,8 +97,9 @@ public class MakrutExecutorBuilderTest {
 		when(executorService.submit(any(Callable.class))).thenReturn(future);
 
 		when(callableUtilsFactory.create(any(Callable.class))).thenReturn(callUtils);
+		when(futureUtilsFactory.create(any(Callable.class))).thenReturn(futureUtils);
 
-		builder = new MakrutExecutorBuilder(callableUtilsFactory, futureUtils);
+		builder = new MakrutExecutorBuilder(callableUtilsFactory, futureUtilsFactory);
 	}
 
 	@After
