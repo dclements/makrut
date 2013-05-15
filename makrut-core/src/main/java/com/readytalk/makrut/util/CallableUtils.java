@@ -25,13 +25,13 @@ import com.google.inject.assistedinject.AssistedInject;
 @Immutable
 public class CallableUtils {
 	private final MetricRegistry metrics;
-	private final Callable<?> input;
+	private final String name;
 	private final TimeLimiter limiter = new SimpleTimeLimiter();
 
 	@AssistedInject
-	public CallableUtils(final MetricRegistry metrics, @Assisted final Callable<?> input) {
+	public CallableUtils(final MetricRegistry metrics, @Assisted final String name) {
 		this.metrics = metrics;
-		this.input = input;
+		this.name = name;
 	}
 
 	/**
@@ -52,7 +52,7 @@ public class CallableUtils {
 		checkNotNull(callable);
 		checkNotNull(unit);
 
-		final Meter durationExceeded = metrics.meter(name(input.getClass(), "call", "timeout-exceeded"));
+		final Meter durationExceeded = metrics.meter(name(name, "call", "timeout-exceeded"));
 
 		final Callable<T> retval = limiter.newProxy(callable, Callable.class, timeLimit, unit);
 
@@ -79,7 +79,7 @@ public class CallableUtils {
 	public <T> Callable<T> timeExecution(final Callable<T> callable) {
 		checkNotNull(callable);
 
-		final Timer timer = metrics.timer(name(input.getClass(), "call", "duration"));
+		final Timer timer = metrics.timer(name(name, "call", "duration"));
 
 		return new Callable<T>() {
 
@@ -93,7 +93,7 @@ public class CallableUtils {
 	public <T> Callable<T> meterExecution(final Callable<T> callable) {
 		checkNotNull(callable);
 
-		final Meter count = metrics.meter(name(input.getClass(), "call", "count"));
+		final Meter count = metrics.meter(name(name, "call", "count"));
 		return new Callable<T>() {
 			@Override
 			public T call() throws Exception {

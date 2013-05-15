@@ -1,5 +1,6 @@
 package com.readytalk.makrut.util;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -23,7 +24,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
-import com.readytalk.makrut.strategy.PushbackStrategy;
+import com.readytalk.makrut.strategy.BackoffStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import org.junit.After;
 import org.junit.Before;
@@ -41,7 +42,7 @@ public class FutureUtilsTest {
 	private MakrutCommandWrapper<Object> command;
 
 	@Mock
-	private PushbackStrategy pushbackStrategy;
+	private BackoffStrategy backoffStrategy;
 
 	@Mock
 	private RetryStrategy retryStrategy;
@@ -60,7 +61,7 @@ public class FutureUtilsTest {
 
 		executorService = MoreExecutors.listeningDecorator(new ScheduledThreadPoolExecutor(1));
 
-		utils = new FutureUtils(new MetricRegistry(), callable);
+		utils = new FutureUtils(new MetricRegistry(), name(callable.getClass()));
 	}
 
 	@After
@@ -77,7 +78,7 @@ public class FutureUtilsTest {
 		when(command.call()).thenReturn(obj);
 
 		ListenableFuture<Object> withRetry = utils.addRetry(executorService, retryStrategy,
-				Optional.of(pushbackStrategy), value, command);
+				Optional.of(backoffStrategy), value, command);
 
 
 		Error th = new AssertionError();
@@ -107,7 +108,7 @@ public class FutureUtilsTest {
 		when(command.call()).thenReturn(obj);
 
 		ListenableFuture<Object> withRetry = utils.addRetry(executorService, retryStrategy,
-				Optional.of(pushbackStrategy), value, command);
+				Optional.of(backoffStrategy), value, command);
 
 		value.setException(new Exception());
 
@@ -125,14 +126,14 @@ public class FutureUtilsTest {
 		when(command.call()).thenReturn(obj);
 
 		ListenableFuture<Object> withRetry = utils.addRetry(executorService, retryStrategy,
-				Optional.of(pushbackStrategy), value, command);
+				Optional.of(backoffStrategy), value, command);
 
 
 		value.setException(new Exception());
 
 		assertEquals(obj, withRetry.get());
 
-		verify(command).getAndSetNextPushback(eq(pushbackStrategy));
+		verify(command).getAndSetNextBackoff(eq(backoffStrategy));
 
 	}
 
@@ -144,7 +145,7 @@ public class FutureUtilsTest {
 		when(command.call()).thenThrow(new RuntimeException()).thenReturn(obj);
 
 		ListenableFuture<Object> withRetry = utils.addRetry(executorService, retryStrategy,
-				Optional.of(pushbackStrategy), value, command);
+				Optional.of(backoffStrategy), value, command);
 
 		value.setException(new Exception());
 
@@ -160,7 +161,7 @@ public class FutureUtilsTest {
 		when(retryStrategy.shouldRetry(anyInt(), anyLong(), any(Exception.class))).thenReturn(false);
 
 		ListenableFuture<Object> withRetry = utils.addRetry(executorService, retryStrategy,
-				Optional.of(pushbackStrategy), value, command);
+				Optional.of(backoffStrategy), value, command);
 
 		Exception testEx = new Exception();
 		value.setException(testEx);

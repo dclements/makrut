@@ -2,6 +2,7 @@ package com.readytalk.makrut;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,7 +18,7 @@ import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
-import com.readytalk.makrut.strategy.PushbackStrategy;
+import com.readytalk.makrut.strategy.BackoffStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import com.readytalk.makrut.util.CacheWrapper;
 import com.readytalk.makrut.util.CallableUtils;
@@ -69,7 +70,7 @@ public class MakrutExecutorBuilderTest {
 	private FutureUtils futureUtils;
 
 	@Mock
-	private PushbackStrategy pushback;
+	private BackoffStrategy backoff;
 
 	@Mock
 	private Callable<Object> callable;
@@ -96,8 +97,8 @@ public class MakrutExecutorBuilderTest {
 
 		when(executorService.submit(any(Callable.class))).thenReturn(future);
 
-		when(callableUtilsFactory.create(any(Callable.class))).thenReturn(callUtils);
-		when(futureUtilsFactory.create(any(Callable.class))).thenReturn(futureUtils);
+		when(callableUtilsFactory.create(anyString())).thenReturn(callUtils);
+		when(futureUtilsFactory.create(anyString())).thenReturn(futureUtils);
 
 		builder = new MakrutExecutorBuilder(callableUtilsFactory, futureUtilsFactory);
 	}
@@ -115,7 +116,7 @@ public class MakrutExecutorBuilderTest {
 		builder.withIndividualTimeLimit(1000L, TimeUnit.MILLISECONDS);
 		builder.withBlockingCache(cache);
 		builder.withRetry(retry, retryService);
-		builder.withPushback(pushback);
+		builder.withBackoff(backoff);
 		builder.withSemaphore(sem);
 		builder.withTicker(ticker);
 		builder.withFallbackCache(cache);
@@ -135,7 +136,7 @@ public class MakrutExecutorBuilderTest {
 		order.verify(callUtils).populateCacheWithResult(eq(callable), any(Callable.class), any(CacheWrapper.class));
 
 		order.verify(futureUtils)
-				.addRetry(eq(retryService), eq(retry), eq(Optional.of(pushback)), eq(future),
+				.addRetry(eq(retryService), eq(retry), eq(Optional.of(backoff)), eq(future),
 						any(MakrutCommandWrapper.class));
 
 		order.verify(futureUtils).withFallbackCache(eq(callable), eq(future), any(CacheWrapper.class));

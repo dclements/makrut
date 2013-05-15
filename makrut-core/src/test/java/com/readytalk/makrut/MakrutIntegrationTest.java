@@ -35,7 +35,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
 import com.readytalk.makrut.inject.MakrutCoreModule;
-import com.readytalk.makrut.strategy.PushbackStrategy;
+import com.readytalk.makrut.strategy.BackoffStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import org.junit.Before;
 import org.junit.Rule;
@@ -81,7 +81,7 @@ public class MakrutIntegrationTest {
 	private RetryStrategy retryStrategy;
 
 	@Mock
-	private PushbackStrategy pushbackStrategy;
+	private BackoffStrategy backoffStrategy;
 
 	@Mock
 	private Ticker ticker;
@@ -296,14 +296,14 @@ public class MakrutIntegrationTest {
 
 		when(retryStrategy.shouldRetry(eq(1), anyLong(), any(Exception.class))).thenReturn(true);
 
-		when(pushbackStrategy.nextWaitPeriod(anyInt(), anyLong(), any(TimeUnit.class))).thenReturn(100L);
+		when(backoffStrategy.nextWaitPeriod(anyInt(), anyLong(), any(TimeUnit.class))).thenReturn(100L);
 
-		MakrutExecutor mexec = builder.withRetry(retryStrategy, retryExecutor).withPushback(pushbackStrategy).build();
+		MakrutExecutor mexec = builder.withRetry(retryStrategy, retryExecutor).withBackoff(backoffStrategy).build();
 
 		assertEquals(obj, mexec.submit(callable).get());
 
 		verify(retryExecutor).schedule(any(ListenableFutureTask.class), eq(100L), eq(TimeUnit.MILLISECONDS));
-		verify(pushbackStrategy).nextWaitPeriod(eq(1), eq(0L), any(TimeUnit.class));
+		verify(backoffStrategy).nextWaitPeriod(eq(1), eq(0L), any(TimeUnit.class));
 		verify(retryStrategy).shouldRetry(eq(1), anyLong(), eq(th));
 		verify(callable, times(2)).call();
 	}

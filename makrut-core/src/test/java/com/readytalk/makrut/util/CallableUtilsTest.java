@@ -57,7 +57,7 @@ public class CallableUtilsTest {
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 
-		utils = new CallableUtils(metrics, testcallable);
+		utils = new CallableUtils(metrics, name(testcallable.getClass()));
 
 		timer = metrics.timer(name(testcallable.getClass(), "call", "duration"));
 	}

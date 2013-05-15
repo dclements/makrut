@@ -5,15 +5,15 @@ import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.TimeUnit;
 
 @ThreadSafe
-public interface PushbackStrategy {
+public interface BackoffStrategy {
 	/**
 	 * The amount of time to wait before retrying.
 	 *
 	 * @param lastExecutionCount The number of times the call has been attempted.
-	 * @param lastPushback The previous amount of time waited before the last execution.
+	 * @param lastBackoff The previous amount of time waited before the last execution.
 	 * @param unit The TimeUnit to use.
 	 *
 	 * @return The next suggested amount of time to wait.
 	 */
-	long nextWaitPeriod(@Nonnegative int lastExecutionCount, @Nonnegative long lastPushback, TimeUnit unit);
+	long nextWaitPeriod(@Nonnegative int lastExecutionCount, @Nonnegative long lastBackoff, TimeUnit unit);
 }

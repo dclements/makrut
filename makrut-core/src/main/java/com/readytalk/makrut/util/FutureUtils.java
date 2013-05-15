@@ -17,7 +17,7 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import com.readytalk.makrut.strategy.PushbackStrategy;
+import com.readytalk.makrut.strategy.BackoffStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -28,40 +28,40 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public class FutureUtils {
 
 	private final MetricRegistry metrics;
-	private final Callable<?> input;
+	private final String name;
 
 	@AssistedInject
-	public FutureUtils(final MetricRegistry metrics, @Assisted final Callable<?> input) {
+	public FutureUtils(final MetricRegistry metrics, @Assisted final String name) {
 		this.metrics = metrics;
-		this.input = input;
+		this.name = name;
 
 	}
 
 	/**
 	 * Makes a ListenableFuture retryable, delegating to a given command and placing it on an executor.
 	 *
-	 * It should be noted that this does not block the original thread and does not hold a resource if a pushback is
+	 * It should be noted that this does not block the original thread and does not hold a resource if a backoff is
 	 * being used.
 	 *
 	 * @param service The Executor to run the fallback on.  It is recommended that this be a limited pool of
 	 * some
 	 * variety.
 	 * @param retryStrategy The strategy that will indicate rather a retry should be attempted.
-	 * @param pushbackStrategy How much to defer attempts to retry, allowing for constant-time or exponential backoff
+	 * @param backoffStrategy How much to defer attempts to retry, allowing for constant-time or exponential backoff
 	 * If this is absent then all retries will be scheduled to execute immediately.
 	 * @param future The Future to trigger a retry off of if it fails.
 	 * @param command The command to run if the future fails.
 	 */
 	public <T> ListenableFuture<T> addRetry(final ListeningScheduledExecutorService service,
 			final RetryStrategy retryStrategy,
-			final Optional<PushbackStrategy> pushbackStrategy,
+			final Optional<BackoffStrategy> backoffStrategy,
 			final ListenableFuture<T> future,
 			final MakrutCommandWrapper<T> command) {
 
 		checkNotNull(future);
 		checkNotNull(command);
 
-		final Meter retryRate = metrics.meter(name(input.getClass(), "retry", "rate"));
+		final Meter retryRate = metrics.meter(name(name, "retry", "rate"));
 
 		return Futures.withFallback(future, new FutureFallback<T>() {
 
@@ -81,8 +81,8 @@ public class FutureUtils {
 				retryRate.mark();
 
 				if (retryStrategy.shouldRetry(command.callCount(), command.timeElapsed(TimeUnit.MILLISECONDS), ex)) {
-					return addRetry(service, retryStrategy, pushbackStrategy,
-							submit(service, pushbackStrategy, command), command);
+					return addRetry(service, retryStrategy, backoffStrategy,
+							submit(service, backoffStrategy, command), command);
 				} else {
 					throw ex;
 				}
@@ -92,11 +92,11 @@ public class FutureUtils {
 	}
 
 	private <T> ListenableFuture<T> submit(final ListeningScheduledExecutorService service,
-			final Optional<PushbackStrategy> pushbackStrategy,
+			final Optional<BackoffStrategy> backoffStrategy,
 			final MakrutCommandWrapper<T> command) {
 
-		if (pushbackStrategy.isPresent()) {
-			long valueMillis = command.getAndSetNextPushback(pushbackStrategy.get());
+		if (backoffStrategy.isPresent()) {
+			long valueMillis = command.getAndSetNextBackoff(backoffStrategy.get());
 
 			ListenableFutureTask<T> task = ListenableFutureTask.create(command);
 			service.schedule(task, valueMillis, TimeUnit.MILLISECONDS);
@@ -118,10 +118,10 @@ public class FutureUtils {
 				if (future.isCancelled()) {
 					return Futures.immediateCancelledFuture();
 				} else if (value.isPresent()) {
-					metrics.meter(name(input.getClass(), "fallback", "cache", "hit", "rate"));
+					metrics.meter(name(name, "fallback", "cache", "hit", "rate"));
 					return Futures.immediateFuture(value.get());
 				} else {
-					metrics.meter(name(input.getClass(), "fallback", "cache", "miss", "rate"));
+					metrics.meter(name(name, "fallback", "cache", "miss", "rate"));
 					return Futures.immediateFailedFuture(th);
 				}
 			}

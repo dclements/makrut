@@ -11,7 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Ticker;
-import com.readytalk.makrut.strategy.PushbackStrategy;
+import com.readytalk.makrut.strategy.BackoffStrategy;
 
 /**
  * A wrapped callable object with instrumentation.  Designed to be executed on multiple threads and maintain
@@ -22,7 +22,7 @@ public class MakrutCommandWrapper<T> implements Callable<T> {
 
 	private final Lock timerLock = new ReentrantLock();
 	private final AtomicInteger callCount = new AtomicInteger(0);
-	private final AtomicLong lastPushbackMillis = new AtomicLong(0);
+	private final AtomicLong lastBackoffMillis = new AtomicLong(0);
 
 	private final Callable<T> delegate;
 	private final Stopwatch timer;
@@ -84,17 +84,17 @@ public class MakrutCommandWrapper<T> implements Callable<T> {
 	}
 
 	/**
-	 * Gets the next pushback value and records it.
+	 * Gets the next backoff value and records it.
 	 *
-	 * @param strategy The strategy to use for determining the next pushback size.
+	 * @param strategy The strategy to use for determining the next backoff size.
 	 *
-	 * @return The next suggested pushback size.
+	 * @return The next suggested backoff size.
 	 */
-	public long getAndSetNextPushback(final PushbackStrategy strategy) {
+	public long getAndSetNextBackoff(final BackoffStrategy strategy) {
 
-		long value = strategy.nextWaitPeriod(callCount.get(), lastPushbackMillis.get(), TimeUnit.MILLISECONDS);
+		long value = strategy.nextWaitPeriod(callCount.get(), lastBackoffMillis.get(), TimeUnit.MILLISECONDS);
 
-		lastPushbackMillis.set(value);
+		lastBackoffMillis.set(value);
 
 		return value;
 	}

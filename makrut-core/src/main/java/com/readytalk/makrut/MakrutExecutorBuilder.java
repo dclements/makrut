@@ -1,5 +1,6 @@
 package com.readytalk.makrut;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -18,7 +19,7 @@ import com.google.common.cache.Cache;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.ListeningScheduledExecutorService;
-import com.readytalk.makrut.strategy.PushbackStrategy;
+import com.readytalk.makrut.strategy.BackoffStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
 import com.readytalk.makrut.util.CacheWrapper;
 import com.readytalk.makrut.util.CallableUtils;
@@ -53,7 +54,7 @@ public class MakrutExecutorBuilder {
 	private Optional<Long> individualTimeLimitMillis = Optional.absent();
 	private Optional<ListeningScheduledExecutorService> retryPool = Optional.absent();
 	private Optional<RetryStrategy> retry = Optional.absent();
-	private Optional<PushbackStrategy> pushback = Optional.absent();
+	private Optional<BackoffStrategy> backoff = Optional.absent();
 	private Optional<CacheWrapper> fallbackCache = Optional.absent();
 
 	private boolean callTimer = false;
@@ -82,7 +83,7 @@ public class MakrutExecutorBuilder {
 	private <T, V extends Callable<T>> MakrutCommandWrapper<T> buildCommand(final V input) {
 		Callable<T> command = input;
 
-		CallableUtils utils = callUtilsFactory.create(input);
+		CallableUtils utils = callUtilsFactory.create(name(input.getClass()));
 
 		if (callSemaphore.isPresent()) {
 			command = utils.withSemaphore(command, callSemaphore.get());
@@ -116,12 +117,12 @@ public class MakrutExecutorBuilder {
 			final ListenableFuture<T> future) {
 		ListenableFuture<T> retval = future;
 
-		FutureUtils utils = retryUtilsFactory.create(input);
+		FutureUtils utils = retryUtilsFactory.create(name(input.getClass()));
 
 		if (retry.isPresent()) {
 			checkState(retryPool.isPresent(), "Retry executor service must also be provided.");
 
-			retval = utils.addRetry(retryPool.get(), retry.get(), pushback, future, command);
+			retval = utils.addRetry(retryPool.get(), retry.get(), backoff, future, command);
 		}
 
 		if (fallbackCache.isPresent()) {
@@ -155,8 +156,8 @@ public class MakrutExecutorBuilder {
 		return this;
 	}
 
-	public MakrutExecutorBuilder withPushback(@Nullable final PushbackStrategy pushbackStrategy) {
-		this.pushback = Optional.fromNullable(pushbackStrategy);
+	public MakrutExecutorBuilder withBackoff(@Nullable final BackoffStrategy backoffStrategy) {
+		this.backoff = Optional.fromNullable(backoffStrategy);
 
 		return this;
 	}
