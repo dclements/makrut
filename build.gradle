@@ -53,6 +53,10 @@ subprojects {
     jacocoTestReport.dependsOn(test)
     build.dependsOn javadoc
     build.dependsOn jacocoTestReport
+    
+    tasks.withType(Compile) { 
+        options.compilerArgs << "-Xlint:all" 
+    } 
 }
 
 task wrapper(type: Wrapper) {

@@ -10,8 +10,7 @@ Work Remaining
 --------------
 
  * Provide more robust metrics, including high level success or failure.
- * Provide a module which will make it easier for those not using Guice.  
- * Provide basic skeletons of commands for quickly building clients. 
+ * Provide a module which will make it easier for those not using Guice. 
  * Improve documentation, in particular providing a sample project.
  * Set up some form of publishing.
  * Allow for cross-cutting error detection and health checking. 
