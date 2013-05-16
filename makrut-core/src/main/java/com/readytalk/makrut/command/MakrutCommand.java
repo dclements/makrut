@@ -1,4 +1,4 @@
-package com.readytalk.makrut;
+package com.readytalk.makrut.command;
 
 
 import javax.annotation.concurrent.Immutable;

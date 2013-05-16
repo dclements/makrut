@@ -34,6 +34,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
+import com.readytalk.makrut.command.MakrutCommand;
 import com.readytalk.makrut.inject.MakrutCoreModule;
 import com.readytalk.makrut.strategy.BackoffStrategy;
 import com.readytalk.makrut.strategy.RetryStrategy;
