@@ -1,0 +1,11 @@
+dependencies {
+    compile (
+        ['com.google.inject:guice:3.0'],
+        ['com.google.inject.extensions:guice-assistedinject:3.0'],
+        ['com.codahale.metrics:metrics-core:3.0.0-BETA3'],
+    )
+}
+
+javadoc {
+  title = "Makrut Core"
+}
