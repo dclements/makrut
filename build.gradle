@@ -1,8 +1,12 @@
+defaultTasks 'build'
+
 subprojects {
     apply plugin: 'java'
     apply plugin: 'checkstyle'
     apply plugin: 'findbugs'
     apply plugin: 'jacoco'
+    
+    defaultTasks 'build'
     
     repositories {
         mavenCentral()
@@ -18,6 +22,7 @@ subprojects {
             ['com.google.code.findbugs:annotations:2.0.1'],
             ['org.slf4j:slf4j-api:1.7.5'],
             ['com.google.guava:guava:14.0.1'],
+            ['com.codahale.metrics:metrics-core:3.0.0-BETA3'],
         )
         
         testCompile (

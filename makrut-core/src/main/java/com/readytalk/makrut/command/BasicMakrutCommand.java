@@ -3,6 +3,7 @@ package com.readytalk.makrut.command;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.FutureFallback;
@@ -66,7 +67,7 @@ public abstract class BasicMakrutCommand<T> extends MakrutCommand<T> {
 		return retval;
 	}
 
-	public T submitAndGet() throws Exception {
+	public T submitAndGet() throws ExecutionException, InterruptedException {
 		return this.submit().get();
 	}
 }

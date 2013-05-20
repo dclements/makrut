@@ -1,0 +1,54 @@
+sourceSets {
+  integTest {
+    compileClasspath += main.output + test.output
+    runtimeClasspath += main.output + test.output
+  }
+}
+
+configurations {
+  integTestCompile {
+    extendsFrom testCompile, compile
+  }
+  
+  integTestRuntime.extendsFrom testRuntime
+}
+
+dependencies {
+    compile (
+        project(':makrut-core'),
+        ['com.google.inject:guice:3.0'],
+        ['com.google.inject.extensions:guice-assistedinject:3.0'],
+        ['commons-pool:commons-pool:1.6'],
+        ['commons-dbcp:commons-dbcp:1.4'],
+        ['commons-dbutils:commons-dbutils:1.5'],
+    )
+    
+    integTestCompile (
+        ['org.hsqldb:hsqldb:2.2.9'],
+        ['org.dbunit:dbunit:2.4.9'],
+    )
+}
+
+javadoc {
+    title = "Makrut Database Layer"
+}
+
+findbugs {
+    sourceSets = [sourceSets.main]
+}
+
+task integTest(type: Test) {
+  testClassesDir = sourceSets.integTest.output.classesDir
+  classpath = sourceSets.integTest.runtimeClasspath
+  
+  jacoco {
+    destPath = file("$buildDir/jacoco/test.exec")
+    append = true
+  }
+}
+
+integTest.dependsOn test
+build.dependsOn integTest
+
+jacocoTestReport.mustRunAfter integTest
+

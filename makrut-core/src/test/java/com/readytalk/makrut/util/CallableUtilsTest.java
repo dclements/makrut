@@ -110,7 +110,7 @@ public class CallableUtilsTest {
 	}
 
 	@Test
-	@SuppressFBWarnings({ "NP_NONNULL_PARAM_VIOLATION" })
+	@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 	public void addTimeLimit_OnNullTimeUnit_ThrowsException() {
 		thrown.expect(NullPointerException.class);
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset SYSTEM "basic_test.dtd">
+
+<dataset>
+    <test id="1" val="test"/>
+    <test id="2" val="test2"/>
+    <test id="3" val="test3"/>
+</dataset>
