@@ -1,0 +1,66 @@
+package com.readytalk.makrut.db.handlers;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.sql.ResultSet;
+
+import com.google.common.collect.ImmutableSet;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+public class DelegatingSetHandlerTest {
+	private final Object[] objects = new Object[]{ new Object(), new Object(), new Object() };
+
+	@Mock
+	private ResultSetRowHandler<Object> rowHandler;
+
+	@Mock
+	private ResultSet rs;
+
+	private DelegatingSetHandler<Object> handler;
+
+	@Before
+	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+
+		handler = new DelegatingSetHandler<Object>(rowHandler);
+	}
+
+	@After
+	public void tearDown() throws Exception {
+
+	}
+
+	@Test
+	public void handle_EmptyResultSet_ReturnsEmptySet() throws Exception {
+		when(rs.next()).thenReturn(false);
+
+		assertTrue(handler.handle(rs).isEmpty());
+	}
+
+	@Test
+	public void handle_AnyResultSet_DoesNotClose() throws Exception {
+		when(rs.next()).thenReturn(false);
+
+		handler.handle(rs);
+
+		verify(rs, never()).close();
+	}
+
+	@Test
+	public void handle_FullResultSet_RetunsItemsInSet() throws Exception {
+		when(rs.next()).thenReturn(true, true, true, false);
+		when(rowHandler.handle(eq(rs))).thenReturn(objects[0], objects[1], objects[2]);
+
+		assertEquals(ImmutableSet.copyOf(objects), handler.handle(rs));
+	}
+
+}
