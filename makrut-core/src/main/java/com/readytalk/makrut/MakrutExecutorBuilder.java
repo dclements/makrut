@@ -119,14 +119,14 @@ public class MakrutExecutorBuilder {
 
 		FutureUtils utils = retryUtilsFactory.create(name(input.getClass()));
 
+		if (fallbackCache.isPresent()) {
+			retval = utils.withFallbackCache(input, retval, fallbackCache.get());
+		}
+
 		if (retry.isPresent()) {
 			checkState(retryPool.isPresent(), "Retry executor service must also be provided.");
 
-			retval = utils.addRetry(retryPool.get(), retry.get(), backoff, future, command);
-		}
-
-		if (fallbackCache.isPresent()) {
-			retval = utils.withFallbackCache(input, retval, fallbackCache.get());
+			retval = utils.addRetry(retryPool.get(), retry.get(), backoff, retval, command);
 		}
 
 		return retval;

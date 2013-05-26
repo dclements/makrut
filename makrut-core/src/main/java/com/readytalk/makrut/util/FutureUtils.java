@@ -118,10 +118,10 @@ public class FutureUtils {
 				if (future.isCancelled()) {
 					return Futures.immediateCancelledFuture();
 				} else if (value.isPresent()) {
-					metrics.meter(name(name, "fallback", "cache", "hit", "rate"));
+					metrics.meter(name(name, "fallback", "cache", "hit", "rate")).mark();
 					return Futures.immediateFuture(value.get());
 				} else {
-					metrics.meter(name(name, "fallback", "cache", "miss", "rate"));
+					metrics.meter(name(name, "fallback", "cache", "miss", "rate")).mark();
 					return Futures.immediateFailedFuture(th);
 				}
 			}

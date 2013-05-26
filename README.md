@@ -14,7 +14,6 @@ Work Remaining
  * Provide more robust metrics, including high level success or failure.
  * Provide a module which will make it easier for those not using Guice. 
  * Improve documentation, in particular providing a sample project.
- * Reverse order of fallback vs. retry.
  * Set up publishing.
  * Allow for cross-cutting error detection and health checking. 
  * Profile current patterns and generate some baseline performance metrics.
@@ -27,3 +26,4 @@ Work Remaining
  * Currently very rough interface, could use a little work on the exact pattern for usage, ordering, etc.  This is especially true for transactions. 
  * Better integration with Guice for nontrivial use cases.
  * Some good defaults for retrying transient SQLExceptions with backoff.
+ * Utilities and more robust ResultSetHandlers.

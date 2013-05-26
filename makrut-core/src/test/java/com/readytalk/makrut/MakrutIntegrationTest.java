@@ -6,6 +6,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -336,17 +337,15 @@ public class MakrutIntegrationTest {
 	@Test
 	public void withFallbackCacheAndRetry_OnFailureWithCache_ReturnsCachedValue() throws Exception {
 		Exception th = new RuntimeException();
-		when(callable.call()).thenReturn(obj).thenThrow(th, th);
-
-		when(retryStrategy.shouldRetry(anyInt(), anyLong(), any(Exception.class))).thenReturn(true, false);
+		when(callable.call()).thenReturn(obj).thenThrow(th);
 
 		MakrutExecutor mexec = builder.withRetry(retryStrategy, retryExecutor).withFallbackCache(cache).build();
 
 		assertEquals(obj, mexec.submit(callable).get());
 		assertEquals(obj, mexec.submit(callable).get());
 
-		verify(retryStrategy).shouldRetry(eq(1), anyLong(), eq(th));
-		verify(callable, times(3)).call();
+		verify(retryStrategy, never()).shouldRetry(anyInt(), anyLong(), any(Exception.class));
+		verify(callable, times(2)).call();
 	}
 
 	@Test

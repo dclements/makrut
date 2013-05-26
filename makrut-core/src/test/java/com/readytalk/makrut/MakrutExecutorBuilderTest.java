@@ -135,11 +135,11 @@ public class MakrutExecutorBuilderTest {
 		order.verify(callUtils).addTimeLimit(any(Callable.class), anyLong(), any(TimeUnit.class));
 		order.verify(callUtils).populateCacheWithResult(eq(callable), any(Callable.class), any(CacheWrapper.class));
 
-		order.verify(futureUtils)
-				.addRetry(eq(retryService), eq(retry), eq(Optional.of(backoff)), eq(future),
-						any(MakrutCommandWrapper.class));
-
 		order.verify(futureUtils).withFallbackCache(eq(callable), eq(future), any(CacheWrapper.class));
+
+		order.verify(futureUtils)
+				.addRetry(eq(retryService), eq(retry), eq(Optional.of(backoff)), any(ListenableFuture.class),
+						any(MakrutCommandWrapper.class));
 
 		verify(callUtils).meterExecution(any(Callable.class));
 	}
