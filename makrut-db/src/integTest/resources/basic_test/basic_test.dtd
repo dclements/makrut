@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT dataset (
+        test*)>
+
+<!ELEMENT test EMPTY>
+<!ATTLIST test
+    id CDATA #REQUIRED
+    val CDATA #REQUIRED
+    >
+

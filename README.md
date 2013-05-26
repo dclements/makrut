@@ -9,9 +9,21 @@ This is an experiment in building a reliability framework using the tools provid
 Work Remaining
 --------------
 
+### makrut-core
+
  * Provide more robust metrics, including high level success or failure.
  * Provide a module which will make it easier for those not using Guice. 
  * Improve documentation, in particular providing a sample project.
- * Set up some form of publishing.
+ * Reverse order of fallback vs. retry.
+ * Set up publishing.
  * Allow for cross-cutting error detection and health checking. 
  * Profile current patterns and generate some baseline performance metrics.
+ * Provide a little easier tunability for advanced use cases.
+
+### makrut-db
+
+ * Provide `batch` capability.
+ * Make using transactions from the factory easier. 
+ * Currently very rough interface, could use a little work on the exact pattern for usage, ordering, etc.  This is especially true for transactions. 
+ * Better integration with Guice for nontrivial use cases.
+

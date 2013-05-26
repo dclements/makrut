@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -122,6 +123,7 @@ public class BackoffStrategiesTest {
 		}
 
 		@Test
+		@SuppressFBWarnings("TQ_NEVER_VALUE_USED_WHERE_ALWAYS_REQUIRED")
 		public void linearIncrease_NegativeFirstValue_ThrowsIAE() {
 			thrown.expect(IllegalArgumentException.class);
 
@@ -219,6 +221,7 @@ public class BackoffStrategiesTest {
 		}
 
 		@Test
+		@SuppressFBWarnings("TQ_NEVER_VALUE_USED_WHERE_ALWAYS_REQUIRED")
 		public void applyUniformRandom_NegativeScale_ThrowsIAE() {
 			thrown.expect(IllegalArgumentException.class);
 
@@ -248,6 +251,7 @@ public class BackoffStrategiesTest {
 		}
 
 		@Test
+		@SuppressFBWarnings("TQ_NEVER_VALUE_USED_WHERE_ALWAYS_REQUIRED")
 		public void applyGaussianRandom_WhenNegativeStdDev_ThrowsIAE() {
 			thrown.expect(IllegalArgumentException.class);
 
