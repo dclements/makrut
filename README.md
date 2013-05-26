@@ -26,4 +26,4 @@ Work Remaining
  * Currently very rough interface, could use a little work on the exact pattern for usage, ordering, etc.  This is especially true for transactions. 
  * Better integration with Guice for nontrivial use cases.
  * Some good defaults for retrying transient SQLExceptions with backoff.
- * Utilities and more robust ResultSetHandlers.
+ * Utilities, especially around `ResultSetHandler`s.
