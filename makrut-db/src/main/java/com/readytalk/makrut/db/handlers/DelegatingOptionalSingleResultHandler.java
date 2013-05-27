@@ -7,6 +7,11 @@ import java.sql.SQLException;
 import com.google.common.base.Optional;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+/**
+ * Returns a single result (the first one) from the ResultSet.  If the ResultSet is empty,
+ * then it returns Optional.absent().
+ *
+ */
 public class DelegatingOptionalSingleResultHandler<T> implements ResultSetHandler<Optional<T>> {
 	private final ResultSetRowHandler<T> delegate;
 

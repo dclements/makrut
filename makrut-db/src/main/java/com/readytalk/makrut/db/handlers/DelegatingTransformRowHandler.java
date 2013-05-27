@@ -7,6 +7,12 @@ import java.sql.SQLException;
 
 import com.google.common.base.Function;
 
+/**
+ * Provides a transform for a given result from a ResultSet.
+ *
+ * @param <I> The input type, coming out of the delegate.
+ * @param <O> The output type, which will be returned to the ResultSetHandler.
+ */
 @Immutable
 public class DelegatingTransformRowHandler<I, O> implements ResultSetRowHandler<O> {
 

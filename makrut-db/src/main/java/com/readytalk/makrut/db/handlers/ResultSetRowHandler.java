@@ -10,6 +10,8 @@ public interface ResultSetRowHandler<T> {
 	/**
 	 * Handle a single row from a ResultSet without forwarding the iterator.
 	 *
+	 * As a best-practice should return an immutable result.
+	 *
 	 * @param rs The result set, forwarded to the appropriate row.
 	 *
 	 * @return The processed value, should never be null (may provide a collection or other object that can contain

@@ -8,6 +8,10 @@ import java.sql.SQLException;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.dbutils.ResultSetHandler;
 
+/**
+ * Returns an ImmutableSet of results from a ResultSet. If the ResultSet is empty
+ * then it will return an empty set.
+ */
 @Immutable
 public class DelegatingSetHandler<T> implements ResultSetHandler<ImmutableSet<T>> {
 	private final ResultSetRowHandler<T> delegate;

@@ -7,6 +7,11 @@ import java.sql.SQLException;
 
 import com.google.common.base.Optional;
 
+/**
+ * Returns an optional scalar value from the first column of a ResultSet.
+ *
+ * If the object is null then it returns Optional.absent().
+ */
 @Immutable
 public class OptionalScalarRowHandler<T> implements ResultSetRowHandler<Optional<T>> {
 	@Override
