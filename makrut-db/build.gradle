@@ -41,6 +41,8 @@ task integTest(type: Test) {
   testClassesDir = sourceSets.integTest.output.classesDir
   classpath = sourceSets.integTest.runtimeClasspath
   
+  testReportDir = file("$buildDir/reports/integTests")
+  
   jacoco {
     destPath = file("$buildDir/jacoco/test.exec")
     append = true
