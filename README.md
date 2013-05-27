@@ -25,5 +25,5 @@ Work Remaining
  * Make using transactions from the factory easier. 
  * Currently very rough interface, could use a little work on the exact pattern for usage, ordering, etc.  This is especially true for transactions. 
  * Better integration with Guice for nontrivial use cases.
- * Some good defaults for retrying transient SQLExceptions with backoff.
- * Utilities, especially around `ResultSetHandler`s.
+ * Better support for SQLState evaluation for retry
+ * Utilities, especially around `ResultSetHandler`.
