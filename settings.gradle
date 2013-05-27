@@ -1,2 +1,1 @@
-include 'makrut-core'
-include 'makrut-db'
+include 'makrut-core', 'makrut-db'
