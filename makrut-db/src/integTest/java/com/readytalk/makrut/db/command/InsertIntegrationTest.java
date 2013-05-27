@@ -1,9 +1,11 @@
 package com.readytalk.makrut.db.command;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.concurrent.ExecutionException;
 
 import com.readytalk.makrut.db.BasicTestDataFramework;
@@ -52,7 +54,7 @@ public class InsertIntegrationTest extends BasicTestDataFramework {
 	}
 
 	@Test
-	public void insert_WithDuplicateKey_Throws23SQLState() throws Exception {
+	public void insert_WithDuplicateKey_ThrowsSQLIntegrityConstraintViolation() throws Exception {
 		Insert<Integer> command = makrutFactory.insert(handler, "insert into test (id, val) VALUES (1, 'test4')");
 
 		try {
@@ -66,6 +68,7 @@ public class InsertIntegrationTest extends BasicTestDataFramework {
 			SQLException sqle = (SQLException) ex.getCause();
 
 			assertEquals("23", sqle.getSQLState().substring(0, 2));
+			assertTrue(sqle instanceof SQLIntegrityConstraintViolationException);
 		}
 	}
 }
