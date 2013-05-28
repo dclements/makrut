@@ -31,7 +31,7 @@ public class DelegatingSetHandlerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new DelegatingSetHandler<Object>(rowHandler);
+		handler = DelegatingResultSetHandlers.setHandler(rowHandler);
 	}
 
 	@After

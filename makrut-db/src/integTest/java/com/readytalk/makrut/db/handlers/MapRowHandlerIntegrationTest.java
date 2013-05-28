@@ -39,7 +39,7 @@ public class MapRowHandlerIntegrationTest extends BasicTestDataFramework {
 				.build();
 
 		Query<ImmutableList<ImmutableMap<String, Object>>> query = makrutFactory.query(
-				new DelegatingListHandler<ImmutableMap<String, Object>>(new MapRowHandler<Object>()),
+				DelegatingResultSetHandlers.listHandler(RowHandlers.mapRowHandler()),
 				"select id, val from test where id = 1");
 
 
@@ -57,7 +57,7 @@ public class MapRowHandlerIntegrationTest extends BasicTestDataFramework {
 				.build();
 
 		Query<ImmutableList<ImmutableMap<String, Object>>> query = makrutFactory.query(
-				new DelegatingListHandler<ImmutableMap<String, Object>>(new MapRowHandler<Object>()),
+				DelegatingResultSetHandlers.listHandler(RowHandlers.mapRowHandler()),
 				"select id, val as value from test where id = 1");
 
 
@@ -70,7 +70,7 @@ public class MapRowHandlerIntegrationTest extends BasicTestDataFramework {
 	public void handle_NullValue_ThrowsNPE() throws Exception {
 
 		Query<ImmutableList<ImmutableMap<String, Object>>> query = makrutFactory.query(
-				new DelegatingListHandler<ImmutableMap<String, Object>>(new MapRowHandler<Object>()),
+				DelegatingResultSetHandlers.listHandler(RowHandlers.mapRowHandler()),
 				"select id, null as value from test where id = 1");
 
 		try {

@@ -31,7 +31,7 @@ public class DelegatingSingleResultHandlerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new DelegatingSingleResultHandler<Object>(rowHandler);
+		handler = DelegatingResultSetHandlers.singleResultHandler(rowHandler);
 
 	}
 

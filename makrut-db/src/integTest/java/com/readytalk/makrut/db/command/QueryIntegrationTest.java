@@ -1,5 +1,6 @@
 package com.readytalk.makrut.db.command;
 
+import static com.readytalk.makrut.db.handlers.DelegatingResultSetHandlers.listHandler;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -7,23 +8,26 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.readytalk.makrut.db.BasicTestDataFramework;
 import com.readytalk.makrut.db.MakrutDBFactory;
+import com.readytalk.makrut.db.handlers.DelegatingListHandler;
+import com.readytalk.makrut.db.handlers.RowHandlers;
 import org.apache.commons.dbutils.handlers.MapHandler;
-import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockitoAnnotations;
 
+@SuppressWarnings("AssertEqualsBetweenInconvertibleTypes")
 public class QueryIntegrationTest extends BasicTestDataFramework {
 
-	private final MapListHandler listHandler = new MapListHandler();
+	private final DelegatingListHandler<ImmutableMap<String, Object>> listHandler = listHandler(
+			RowHandlers.<Object>mapRowHandler());
 	private final MapHandler mapHandler = new MapHandler();
 
 	private MakrutDBFactory makrutFactory;
@@ -45,10 +49,11 @@ public class QueryIntegrationTest extends BasicTestDataFramework {
 
 	@Test
 	public void select_OverAllRows_ReturnsAllRows() throws Exception {
-		Query<List<Map<String, Object>>> query = makrutFactory.query(listHandler, "select * from test order by id");
+		Query<ImmutableList<ImmutableMap<String, Object>>> query = makrutFactory.query(listHandler,
+				"select * from test order by id");
 
 
-		List<Map<String, Object>> result = query.submitAndGet();
+		ImmutableList<ImmutableMap<String, Object>> result = query.submitAndGet();
 
 		assertEquals(dataSet, result);
 	}
@@ -64,18 +69,18 @@ public class QueryIntegrationTest extends BasicTestDataFramework {
 
 	@Test
 	public void select_WithNoResults_ReturnsNoRows() throws Exception {
-		Query<List<Map<String, Object>>> query = makrutFactory.query(listHandler, "select * from test where id < ?",
-				0);
+		Query<ImmutableList<ImmutableMap<String, Object>>> query = makrutFactory.query(listHandler,
+				"select * from test where id < ?", 0);
 
 
-		List<Map<String, Object>> result = query.submitAndGet();
+		ImmutableList<ImmutableMap<String, Object>> result = query.submitAndGet();
 
 		assertThat(result.size(), is(equalTo(0)));
 	}
 
 	@Test
 	public void select_WhenUpdateIsInvalid_ThrowsWrappedSQLException() throws Exception {
-		Query<List<Map<String, Object>>> query = makrutFactory.query(listHandler, "select");
+		Query<ImmutableList<ImmutableMap<String, Object>>> query = makrutFactory.query(listHandler, "select");
 
 		try {
 			query.submitAndGet();

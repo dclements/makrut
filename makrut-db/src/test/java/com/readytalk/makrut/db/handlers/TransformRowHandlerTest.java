@@ -16,7 +16,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-public class DelegatingTransformRowHandlerTest {
+public class TransformRowHandlerTest {
 
 	private final Object obj1 = new Object();
 	private final Object obj2 = new Object();
@@ -30,13 +30,13 @@ public class DelegatingTransformRowHandlerTest {
 	@Mock
 	private ResultSet rs;
 
-	private DelegatingTransformRowHandler<Object, Object> handler;
+	private TransformRowHandler<Object, Object> handler;
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new DelegatingTransformRowHandler<Object, Object>(delegateHandler, func);
+		handler = RowHandlers.transformRowHandler(delegateHandler, func);
 
 	}
 

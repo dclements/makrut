@@ -3,6 +3,8 @@ package com.readytalk.makrut.db.handlers;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import javax.annotation.WillNotClose;
+import javax.annotation.concurrent.Immutable;
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -15,7 +17,14 @@ import com.google.common.collect.ImmutableMap;
  *
  * If any of the columns are null, it will throw a NullPointerException.
  */
+@Immutable
 public class MapRowHandler<V> implements ResultSetRowHandler<ImmutableMap<String, V>> {
+
+	@Inject
+	public MapRowHandler() {
+
+	}
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public ImmutableMap<String, V> handle(@WillNotClose final ResultSet rs) throws SQLException {
