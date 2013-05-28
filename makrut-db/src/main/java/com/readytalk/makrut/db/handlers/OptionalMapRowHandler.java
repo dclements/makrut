@@ -1,6 +1,8 @@
 package com.readytalk.makrut.db.handlers;
 
 import javax.annotation.WillNotClose;
+import javax.annotation.concurrent.Immutable;
+import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -14,7 +16,14 @@ import com.google.common.collect.ImmutableMap;
  *
  * Null safe, returning Optional.absent() for null values.
  */
+@Immutable
 public class OptionalMapRowHandler<V> implements ResultSetRowHandler<ImmutableMap<String, Optional<V>>> {
+
+	@Inject
+	public OptionalMapRowHandler() {
+
+	}
+
 	@Override
 	@SuppressWarnings("unchecked")
 	public ImmutableMap<String, Optional<V>> handle(@WillNotClose final ResultSet rs) throws SQLException {

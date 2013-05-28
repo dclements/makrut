@@ -27,7 +27,7 @@ public class OptionalScalarRowHandlerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new OptionalScalarRowHandler<Object>();
+		handler = RowHandlers.optionalScalarRowHandler();
 	}
 
 	@After

@@ -10,8 +10,8 @@ import java.util.concurrent.ExecutionException;
 
 import com.readytalk.makrut.db.BasicTestDataFramework;
 import com.readytalk.makrut.db.MakrutDBFactory;
-import com.readytalk.makrut.db.handlers.DelegatingSingleResultHandler;
-import com.readytalk.makrut.db.handlers.ScalarRowHandler;
+import com.readytalk.makrut.db.handlers.DelegatingResultSetHandlers;
+import com.readytalk.makrut.db.handlers.RowHandlers;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.junit.After;
 import org.junit.Before;
@@ -20,8 +20,8 @@ import org.mockito.MockitoAnnotations;
 
 public class InsertIntegrationTest extends BasicTestDataFramework {
 
-	private final ResultSetHandler<Integer> handler = new DelegatingSingleResultHandler<Integer>(
-			new ScalarRowHandler<Integer>());
+	private final ResultSetHandler<Integer> handler = DelegatingResultSetHandlers.singleResultHandler(
+			RowHandlers.<Integer>scalarRowHandler());
 
 	private MakrutDBFactory makrutFactory;
 

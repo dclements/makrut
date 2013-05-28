@@ -44,7 +44,7 @@ public class OptionalMapRowHandlerTest {
 
 		when(rsmd.getColumnCount()).thenReturn(2);
 
-		handler = new OptionalMapRowHandler<Object>();
+		handler = RowHandlers.optionalMapRowHandler();
 	}
 
 	@After

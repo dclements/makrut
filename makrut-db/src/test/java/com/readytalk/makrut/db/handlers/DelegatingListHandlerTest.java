@@ -32,7 +32,7 @@ public class DelegatingListHandlerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new DelegatingListHandler<Object>(rowHandler);
+		handler = DelegatingResultSetHandlers.listHandler(rowHandler);
 	}
 
 	@After

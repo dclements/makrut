@@ -39,7 +39,7 @@ public class OptionalMapRowHandlerIntegrationTest extends BasicTestDataFramework
 
 
 		Query<ImmutableList<ImmutableMap<String, Optional<Object>>>> query = makrutFactory.query(
-				new DelegatingListHandler<ImmutableMap<String, Optional<Object>>>(new OptionalMapRowHandler<Object>()),
+				DelegatingResultSetHandlers.listHandler(RowHandlers.optionalMapRowHandler()),
 				"select id, val from test where id = 1");
 
 
@@ -58,7 +58,7 @@ public class OptionalMapRowHandlerIntegrationTest extends BasicTestDataFramework
 				.build();
 
 		Query<ImmutableList<ImmutableMap<String, Optional<Object>>>> query = makrutFactory.query(
-				new DelegatingListHandler<ImmutableMap<String, Optional<Object>>>(new OptionalMapRowHandler<Object>()),
+				DelegatingResultSetHandlers.listHandler(RowHandlers.optionalMapRowHandler()),
 				"select id, val as value from test where id = 1");
 
 
@@ -76,7 +76,7 @@ public class OptionalMapRowHandlerIntegrationTest extends BasicTestDataFramework
 				.build();
 
 		Query<ImmutableList<ImmutableMap<String, Optional<Object>>>> query = makrutFactory.query(
-				new DelegatingListHandler<ImmutableMap<String, Optional<Object>>>(new OptionalMapRowHandler<Object>()),
+				DelegatingResultSetHandlers.listHandler(RowHandlers.optionalMapRowHandler()),
 				"select id, null as val from test where id = 1");
 
 

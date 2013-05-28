@@ -14,12 +14,12 @@ import com.google.common.base.Function;
  * @param <O> The output type, which will be returned to the ResultSetHandler.
  */
 @Immutable
-public class DelegatingTransformRowHandler<I, O> implements ResultSetRowHandler<O> {
+public class TransformRowHandler<I, O> implements ResultSetRowHandler<O> {
 
 	private final ResultSetRowHandler<I> delegate;
 	private final Function<I, O> transform;
 
-	public DelegatingTransformRowHandler(final ResultSetRowHandler<I> delegate, final Function<I, O> transform) {
+	public TransformRowHandler(final ResultSetRowHandler<I> delegate, final Function<I, O> transform) {
 		this.delegate = delegate;
 		this.transform = transform;
 	}

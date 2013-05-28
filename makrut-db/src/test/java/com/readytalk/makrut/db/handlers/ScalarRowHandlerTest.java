@@ -1,7 +1,6 @@
 package com.readytalk.makrut.db.handlers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -28,7 +27,7 @@ public class ScalarRowHandlerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new ScalarRowHandler<Object>();
+		handler = RowHandlers.scalarRowHandler();
 	}
 
 	@After

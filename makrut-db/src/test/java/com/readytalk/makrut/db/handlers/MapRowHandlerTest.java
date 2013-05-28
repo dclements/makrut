@@ -43,7 +43,7 @@ public class MapRowHandlerTest {
 
 		when(rsmd.getColumnCount()).thenReturn(2);
 
-		handler = new MapRowHandler<Object>();
+		handler = RowHandlers.mapRowHandler();
 	}
 
 	@After

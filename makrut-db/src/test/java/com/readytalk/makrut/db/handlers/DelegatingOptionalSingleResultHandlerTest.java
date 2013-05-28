@@ -30,7 +30,7 @@ public class DelegatingOptionalSingleResultHandlerTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 
-		handler = new DelegatingOptionalSingleResultHandler<Object>(rowHandler);
+		handler = DelegatingResultSetHandlers.optionalSingleResultHandler(rowHandler);
 
 	}
 
