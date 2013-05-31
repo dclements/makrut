@@ -194,17 +194,66 @@ public class BackoffStrategiesTest {
 		}
 
 		@Test
-		public void applyUniformRandom_OnMaxScale_ReturnsFullAdjustment() {
+		public void applyUniformRandomScale_OnMaxScale_ReturnsFullAdjustment() {
 			when(strategy.nextWaitPeriod(anyInt(), anyLong(), any(TimeUnit.class))).thenReturn(1500L);
 
 			Random r = new Random(400);
 
 			BackoffStrategies.RANDOM.set(r);
 
-			assertEquals(1900,
-					BackoffStrategies.applyUniformRandom(strategy, 1.0).nextWaitPeriod(1, 100L,
-							TimeUnit.MILLISECONDS));
+			assertEquals(1900, BackoffStrategies.applyUniformRandomScale(strategy, 1.0)
+					.nextWaitPeriod(1, 100L, TimeUnit.MILLISECONDS));
 
+		}
+
+		@Test
+		public void applyUniformRandomRange_BetweenValues_ReturnsRandomValue() {
+			when(strategy.nextWaitPeriod(anyInt(), anyLong(), any(TimeUnit.class))).thenReturn(1500L);
+
+			Random r = new Random(400);
+
+			BackoffStrategies.RANDOM.set(r);
+
+			assertEquals(1940, BackoffStrategies.applyUniformRandomRange(strategy, 100, 500, TimeUnit.MILLISECONDS)
+					.nextWaitPeriod(1, 100L, TimeUnit.MILLISECONDS));
+
+		}
+
+		@Test
+		public void applyUniformRandomRange_MaxLessThanMin_ThrowsIAE() {
+			thrown.expect(IllegalArgumentException.class);
+
+			BackoffStrategies.applyUniformRandomRange(strategy, 500, 100, TimeUnit.MILLISECONDS);
+		}
+
+		@Test
+		public void applyUniformRandomRange_MaxEqualsMin_ThrowsIAE() {
+			thrown.expect(IllegalArgumentException.class);
+
+			BackoffStrategies.applyUniformRandomRange(strategy, 100, 100, TimeUnit.MILLISECONDS);
+		}
+
+		@Test
+		@SuppressFBWarnings("TQ_NEVER_VALUE_USED_WHERE_ALWAYS_REQUIRED")
+		public void applyUniformRandomRange_MaxLessThanZero_ThrowsIAE() {
+			thrown.expect(IllegalArgumentException.class);
+
+			BackoffStrategies.applyUniformRandomRange(strategy, 100, -100, TimeUnit.MILLISECONDS);
+		}
+
+		@Test
+		public void applyUniformRandomRange_MaxEqualToZero_ThrowsIAE() {
+			thrown.expect(IllegalArgumentException.class);
+
+			BackoffStrategies.applyUniformRandomRange(strategy, 100, 0, TimeUnit.MILLISECONDS);
+		}
+
+		@Test
+		@SuppressFBWarnings("TQ_NEVER_VALUE_USED_WHERE_ALWAYS_REQUIRED")
+		public void applyUniformRandomRange_MinLessThanZero_ThrowsIAE() {
+			thrown.expect(IllegalArgumentException.class);
+
+			BackoffStrategies.applyUniformRandomRange(strategy, -100, 100, TimeUnit.MILLISECONDS);
 		}
 
 		@Test
@@ -215,7 +264,7 @@ public class BackoffStrategiesTest {
 
 			BackoffStrategies.RANDOM.set(r);
 
-			assertEquals(1700, BackoffStrategies.applyUniformRandom(strategy, 0.5d)
+			assertEquals(1700, BackoffStrategies.applyUniformRandomScale(strategy, 0.5d)
 					.nextWaitPeriod(1, 100L, TimeUnit.MILLISECONDS));
 
 		}
@@ -225,7 +274,7 @@ public class BackoffStrategiesTest {
 		public void applyUniformRandom_NegativeScale_ThrowsIAE() {
 			thrown.expect(IllegalArgumentException.class);
 
-			BackoffStrategies.applyUniformRandom(strategy, -1.0d);
+			BackoffStrategies.applyUniformRandomScale(strategy, -1.0d);
 
 		}
 
@@ -233,7 +282,7 @@ public class BackoffStrategiesTest {
 		public void applyUniformRandom_OverOneScale_ThrowsIAE() {
 			thrown.expect(IllegalArgumentException.class);
 
-			BackoffStrategies.applyUniformRandom(strategy, 1.5d);
+			BackoffStrategies.applyUniformRandomScale(strategy, 1.5d);
 
 		}
 

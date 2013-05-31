@@ -12,8 +12,10 @@ Work Remaining
 ### makrut-core
 
  * Provide more robust metrics, including high level success or failure.
+ * Allow `BasicMakrutCommand` to retry in the same thread, holding acquired resources until it finishes.
  * Provide a module which will make it easier for those not using Guice. 
  * Improve documentation, in particular providing a sample project.
+ * Deeper, more robust integration tests.
  * Set up publishing.
  * Allow for cross-cutting error detection and health checking. 
  * Profile current patterns and generate some baseline performance metrics.
