@@ -22,7 +22,7 @@ subprojects {
             ['com.google.code.findbugs:annotations:2.0.1'],
             ['org.slf4j:slf4j-api:1.7.5'],
             ['com.google.guava:guava:14.0.1'],
-            ['com.codahale.metrics:metrics-core:3.0.0-BETA3'],
+            ['com.codahale.metrics:metrics-core:3.0.0-RC1'],
         )
         
         testCompile (
