@@ -41,6 +41,16 @@ public class RetryStrategiesTest {
 	}
 
 	@Test
+	public void alwaysRetry_OnInput_ReturnsTrue() {
+		assertTrue(RetryStrategies.alwaysRetry().shouldRetry(10, 10L, new Exception()));
+	}
+
+	@Test
+	public void neverRetry_OnInput_ReturnsFalse() {
+		assertFalse(RetryStrategies.neverRetry().shouldRetry(10, 10L, new Exception()));
+	}
+
+	@Test
 	public void and_OnAllTrue_ReturnsTrue() {
 		when(strategy1.shouldRetry(anyInt(), anyLong(), any(Exception.class))).thenReturn(true);
 		when(strategy2.shouldRetry(anyInt(), anyLong(), any(Exception.class))).thenReturn(true);

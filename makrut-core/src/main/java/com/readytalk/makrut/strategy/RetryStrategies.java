@@ -18,6 +18,34 @@ public final class RetryStrategies {
 	}
 
 	/**
+	 * Always returns true.
+	 */
+	public static RetryStrategy alwaysRetry() {
+		return new RetryStrategy() {
+			@Override
+			public boolean shouldRetry(@Nonnegative final int lastExecutionCount,
+					@Nonnegative final long timeSinceStartMillis,
+					final Exception ex) {
+				return true;
+			}
+		};
+	}
+
+	/**
+	 * Always returns false.
+	 */
+	public static RetryStrategy neverRetry() {
+		return new RetryStrategy() {
+			@Override
+			public boolean shouldRetry(@Nonnegative final int lastExecutionCount,
+					@Nonnegative final long timeSinceStartMillis,
+					final Exception ex) {
+				return false;
+			}
+		};
+	}
+
+	/**
 	 * Allows a given number of retries.
 	 *
 	 * @param n The number of retries to allow.
