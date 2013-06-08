@@ -45,14 +45,14 @@ public class BasicMakrutCommandTest {
 
 		command = new BasicMakrutCommand<Object>(executor, "") {
 			@Override
-			public Object call() throws Exception {
+			public Object doCall() throws Exception {
 				return callable.call();
 			}
 		};
 
 		commandWithFallback = new BasicMakrutCommand<Object>(executor, "") {
 			@Override
-			public Object call() throws Exception {
+			public Object doCall() throws Exception {
 				return callable.call();
 			}
 

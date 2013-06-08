@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import com.readytalk.makrut.command.MakrutCommand;
 import org.junit.Test;
 
 @SuppressWarnings("ObjectEqualsNull")

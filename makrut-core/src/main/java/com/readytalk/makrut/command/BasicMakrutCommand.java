@@ -27,6 +27,13 @@ public abstract class BasicMakrutCommand<T> extends MakrutCommand<T> {
 
 		this.executor = executor;
 	}
+	
+	@Override
+	public T call() throws Exception {
+		return doCall();
+	}
+
+	protected abstract T doCall() throws Exception;
 
 	public Optional<Callable<T>> doFallback() {
 		return Optional.absent();
