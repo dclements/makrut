@@ -44,7 +44,7 @@ task integTest(type: Test) {
   testReportDir = file("$buildDir/reports/integTests")
   
   jacoco {
-    destPath = file("$buildDir/jacoco/test.exec")
+    destinationFile = file("$buildDir/jacoco/test.exec")
     append = true
   }
 }
