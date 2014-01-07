@@ -5,16 +5,17 @@ subprojects {
     apply plugin: 'checkstyle'
     apply plugin: 'findbugs'
     apply plugin: 'jacoco'
-    
+    apply plugin: 'ivy-publish'
+
     defaultTasks 'build'
-    
+
     repositories {
         mavenCentral()
     }
-    
+
     group = 'com.readytalk.makrut'
-    version = '1.0.0-SNAPSHOT'
-    
+    version = '1.0.1-SNAPSHOT'
+
     dependencies {
         compile (
             ['javax.inject:javax.inject:1'],
@@ -24,44 +25,52 @@ subprojects {
             ['com.google.guava:guava:14.0.1'],
             ['com.codahale.metrics:metrics-core:3.0.0-RC1'],
         )
-        
+
         testCompile (
             ['junit:junit:4.11'],
             ['org.mockito:mockito-all:1.9.5'],
             ['org.slf4j:slf4j-jdk14:1.7.5'],
         )
     }
-    
+
     checkstyle {
         toolVersion = '5.6'
         showViolations = true
         sourceSets = [sourceSets.main]
         configFile = file("$rootDir/config/checkstyle/checkstyle.xml")
     }
-        
+
     findbugs {
         toolVersion = '2.0.1'
         ignoreFailures = true
     }
-    
+
     jacocoTestReport {
         reports {
             html.enabled = true
             csv.enabled = true
             xml.enabled = true
-        } 
+        }
     }
-    
+
     jacocoTestReport.dependsOn(test)
     build.dependsOn javadoc
     build.dependsOn jacocoTestReport
-    
-    tasks.withType(Compile) { 
+
+    tasks.withType(Compile) {
         options.compilerArgs << "-Xlint:all" 
-    } 
+    }
+
+    publishing {
+        publications {
+            core(IvyPublication) {
+                from components.java
+            }
+        }
+    }
 }
 
 wrapper {
-	gradleVersion '1.7'
+    gradleVersion '1.10'
 }
 
